@@ -32,32 +32,39 @@ def verify_whatsapp(
 @router.post("/whatsapp")
 async def receive_whatsapp(request: Request, db: Session = Depends(get_db)):
     payload = await request.json()
+    print(f"[WHATSAPP WEBHOOK] Received payload: {payload}")
 
     try:
         entry = payload["entry"][0]["changes"][0]["value"]
         if "messages" not in entry:
-            return {"status": "ignored"}  # e.g. delivery/read receipts
+            print("[WHATSAPP WEBHOOK] No 'messages' key — likely a status update, ignoring")
+            return {"status": "ignored"}
 
         msg_data = entry["messages"][0]
         from_number = msg_data["from"]
         phone_number_id = entry["metadata"]["phone_number_id"]
+        print(f"[WHATSAPP WEBHOOK] Message from {from_number} to phone_number_id {phone_number_id}")
 
-        # Find which of our users owns this WhatsApp number
         user = _find_user_by_whatsapp(db, phone_number_id)
         if not user:
+            print(f"[WHATSAPP WEBHOOK] No matching user found for phone_number_id {phone_number_id}")
             return {"status": "no matching account"}
+        print(f"[WHATSAPP WEBHOOK] Matched user: {user.email}")
 
         content = _extract_whatsapp_content(msg_data)
         if content is None:
+            print(f"[WHATSAPP WEBHOOK] Unsupported message type: {msg_data.get('type')}")
             return {"status": "unsupported message type"}
+        print(f"[WHATSAPP WEBHOOK] Extracted content: {content}")
 
         _handle_incoming_message(
             db, user, platform=Platform.WHATSAPP,
             customer_id=from_number, content=content["text"],
             was_voice_note=content["was_voice_note"],
         )
-    except (KeyError, IndexError):
-        pass  # malformed/irrelevant payload, ignore silently per Meta's webhook contract
+        print("[WHATSAPP WEBHOOK] _handle_incoming_message completed")
+    except Exception as e:
+        print(f"[WHATSAPP WEBHOOK] ERROR: {type(e).__name__}: {e}")
 
     return {"status": "received"}
 

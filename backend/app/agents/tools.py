@@ -135,6 +135,7 @@ def tool_search_faqs(db: Session, user_id: str, query: str) -> dict:
 
 
 def tool_send_reply(db: Session, conversation: Conversation, message: str) -> dict:
+    print(f"[TOOL send_reply] Attempting to send: {message[:80]}...")
     msg = Message(conversation_id=conversation.id, sender=MessageSender.AGENT, content=message)
     db.add(msg)
     conversation.status = ConversationStatus.REPLIED
@@ -145,18 +146,21 @@ def tool_send_reply(db: Session, conversation: Conversation, message: str) -> di
 
     try:
         if conversation.platform == Platform.WHATSAPP:
-            send_whatsapp_message(
+            result = send_whatsapp_message(
                 conversation.customer_id, message,
                 phone_number_id=persona.whatsapp_phone_number_id if persona else None,
                 access_token=persona.whatsapp_access_token if persona else None,
             )
+            print(f"[TOOL send_reply] WhatsApp API response: {result}")
         elif conversation.platform == Platform.INSTAGRAM:
-            send_instagram_message(
+            result = send_instagram_message(
                 conversation.customer_id, message,
                 business_account_id=persona.instagram_business_account_id if persona else None,
                 access_token=persona.instagram_access_token if persona else None,
             )
+            print(f"[TOOL send_reply] Instagram API response: {result}")
     except Exception as e:
+        print(f"[TOOL send_reply] SEND FAILED: {type(e).__name__}: {e}")
         return {"status": "saved_but_send_failed", "error": str(e)}
 
     return {"status": "sent"}

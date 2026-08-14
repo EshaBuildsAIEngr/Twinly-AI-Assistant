@@ -66,7 +66,7 @@ def _cosine_similarity(a: list, b: list) -> float:
     return float(np.dot(a, b) / denom)
 
 
-def search_knowledge(db: Session, user_id: str, query: str, top_k: int = 3) -> list[dict]:
+def search_knowledge(db: Session, user_id: str, query: str, top_k: int = 5) -> list[dict]:
     items = db.query(KnowledgeItem).filter(KnowledgeItem.user_id == user_id).all()
     if not items:
         return []

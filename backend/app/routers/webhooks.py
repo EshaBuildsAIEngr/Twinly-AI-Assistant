@@ -162,6 +162,10 @@ def _find_user_by_instagram(db: Session, business_account_id: str) -> User | Non
     if persona:
         return db.query(User).filter(User.id == persona.user_id).first()
 
+    print(f"[INSTAGRAM WEBHOOK] Comparing incoming '{business_account_id}' (type {type(business_account_id)}) "
+          f"vs settings.INSTAGRAM_BUSINESS_ACCOUNT_ID '{settings.INSTAGRAM_BUSINESS_ACCOUNT_ID}' "
+          f"(type {type(settings.INSTAGRAM_BUSINESS_ACCOUNT_ID)})")
+
     if business_account_id == settings.INSTAGRAM_BUSINESS_ACCOUNT_ID:
         return db.query(User).first()
     return None

@@ -119,31 +119,38 @@ def verify_instagram(
 @router.post("/instagram")
 async def receive_instagram(request: Request, db: Session = Depends(get_db)):
     payload = await request.json()
+    print(f"[INSTAGRAM WEBHOOK] Received payload: {payload}")
 
     try:
         entry = payload["entry"][0]
         messaging = entry.get("messaging", [])
         if not messaging:
+            print("[INSTAGRAM WEBHOOK] No 'messaging' key found in entry — ignoring")
             return {"status": "ignored"}
 
         event = messaging[0]
         sender_id = event["sender"]["id"]
         recipient_id = event["recipient"]["id"]  # this is the connected IG business account
         text = event.get("message", {}).get("text")
+        print(f"[INSTAGRAM WEBHOOK] sender={sender_id} recipient={recipient_id} text={text}")
 
         if not text:
+            print(f"[INSTAGRAM WEBHOOK] Unsupported message type, event: {event}")
             return {"status": "unsupported message type"}
 
         user = _find_user_by_instagram(db, recipient_id)
         if not user:
+            print(f"[INSTAGRAM WEBHOOK] No matching user for recipient_id {recipient_id}")
             return {"status": "no matching account"}
+        print(f"[INSTAGRAM WEBHOOK] Matched user: {user.email}")
 
         _handle_incoming_message(
             db, user, platform=Platform.INSTAGRAM,
             customer_id=sender_id, content=text, was_voice_note=False,
         )
-    except (KeyError, IndexError):
-        pass
+        print("[INSTAGRAM WEBHOOK] _handle_incoming_message completed")
+    except Exception as e:
+        print(f"[INSTAGRAM WEBHOOK] ERROR: {type(e).__name__}: {e}")
 
     return {"status": "received"}
 

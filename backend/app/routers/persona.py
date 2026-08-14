@@ -6,7 +6,8 @@ from app.models import User, PersonaProfile, KnowledgeItem
 from app.schemas import PersonaUpdateRequest, PersonaResponse, KnowledgeItemCreate, KnowledgeItemResponse
 from app.auth import get_current_user
 from app.services.embeddings_service import add_knowledge_item
-
+from app.schemas import PersonaUpdateRequest, PersonaResponse, KnowledgeItemCreate, KnowledgeItemResponse, BulkCatalogRequest
+from app.services.embeddings_service import add_knowledge_item, generate_faqs_from_catalog
 router = APIRouter(prefix="/api/persona", tags=["persona"])
 
 
@@ -52,3 +53,11 @@ def delete_knowledge(item_id: str, current_user: User = Depends(get_current_user
         db.delete(item)
         db.commit()
     return {"status": "deleted"}
+
+@router.post("/knowledge/bulk-from-catalog", response_model=list[KnowledgeItemResponse])
+def bulk_generate_knowledge(
+    payload: BulkCatalogRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return generate_faqs_from_catalog(db, current_user.id, payload.raw_text)

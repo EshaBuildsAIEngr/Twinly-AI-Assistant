@@ -8,6 +8,8 @@ export default function Settings() {
   const [newQ, setNewQ] = useState('')
   const [newA, setNewA] = useState('')
   const [saving, setSaving] = useState(false)
+  const [catalogText, setCatalogText] = useState('')
+  const [generatingCatalog, setGeneratingCatalog] = useState(false)
 
   const load = async () => {
     const [pRes, kRes] = await Promise.all([
@@ -39,6 +41,18 @@ export default function Settings() {
   const deleteFaq = async (id) => {
     await client.delete(`/api/persona/knowledge/${id}`)
     load()
+  }
+
+  const generateFromCatalog = async () => {
+    if (!catalogText.trim()) return
+    setGeneratingCatalog(true)
+    try {
+      await client.post('/api/persona/knowledge/bulk-from-catalog', { raw_text: catalogText })
+      setCatalogText('')
+      await load()
+    } finally {
+      setGeneratingCatalog(false)
+    }
   }
 
   if (!persona) return <DashboardLayout><div className="p-8 text-textMuted">Loading...</div></DashboardLayout>
@@ -112,6 +126,23 @@ export default function Settings() {
         {/* Knowledge base */}
         <section>
           <h2 className="text-sm font-semibold text-textMuted uppercase tracking-wide mb-3">FAQs &amp; Policies (grounds the Support Agent)</h2>
+
+          <div className="bg-surface2/50 border border-dashed border-border rounded-lg p-4 mb-4">
+            <div className="text-sm font-medium mb-1">Paste your full product/price list</div>
+            <p className="text-xs text-textMuted mb-3">
+              Paste it however you normally write it — sizes, colors, prices, messy is fine.
+              Twinly will turn it into detailed FAQs automatically, so it can answer specific
+              customer questions (not just general ones).
+            </p>
+            <textarea rows={5} value={catalogText} onChange={(e) => setCatalogText(e.target.value)}
+              placeholder={"e.g.\nLawn suit regular size S-XL: Rs 2000-3500\n2XL-3XL: Rs 2500-4000\nColors: red, blue, black\nMaria B collection: Rs 3500"}
+              className="w-full bg-surface2 border border-border rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-twin mb-3" />
+            <button onClick={generateFromCatalog} disabled={generatingCatalog}
+              className="text-xs bg-gradient-to-br from-twin to-[#8FEEF5] text-bg font-semibold px-4 py-2 rounded-lg disabled:opacity-60">
+              {generatingCatalog ? 'Generating FAQs...' : 'Generate FAQs from this'}
+            </button>
+          </div>
+
           <div className="flex flex-col gap-3 mb-4">
             {knowledge.map((k) => (
               <div key={k.id} className="bg-surface border border-border rounded-lg p-4 flex justify-between gap-4">

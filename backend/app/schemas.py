@@ -60,6 +60,8 @@ class KnowledgeItemCreate(BaseModel):
     question: str
     answer: str
 
+class BulkCatalogRequest(BaseModel):
+    raw_text: str
 
 class KnowledgeItemResponse(BaseModel):
     id: str

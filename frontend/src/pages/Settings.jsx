@@ -66,15 +66,64 @@ export default function Settings() {
         </div>
 
         {/* Platform connections */}
+        {/* Platform connections */}
         <section>
           <h2 className="text-sm font-semibold text-textMuted uppercase tracking-wide mb-3">Connected Platforms</h2>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 mb-4">
             <ConnectRow label="WhatsApp Business" connected={persona.whatsapp_connected} />
             <ConnectRow label="Instagram" connected={persona.instagram_connected} />
           </div>
-          <p className="text-xs text-textMuted mt-2">
-            Connecting requires a Meta Business account and API credentials — see the setup guide provided with this project.
-          </p>
+
+          <div className="bg-surface border border-border rounded-lg p-4 flex flex-col gap-4">
+            <div>
+              <div className="text-sm font-medium mb-1">Connect your WhatsApp Business</div>
+              <p className="text-xs text-textMuted">
+                Get these from your Meta Developer App → WhatsApp → Production Setup.
+                Don't have a Meta App yet? <a href="/docs/whatsapp-setup" className="text-twin underline">See the setup guide</a>.
+              </p>
+            </div>
+            <div>
+              <label className="text-xs text-textMuted block mb-1">Phone Number ID</label>
+              <input value={persona.whatsapp_phone_number_id || ''}
+                onChange={(e) => setPersona({ ...persona, whatsapp_phone_number_id: e.target.value })}
+                placeholder="e.g. 1293689120494992"
+                className="w-full bg-surface2 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-twin" />
+            </div>
+            <div>
+              <label className="text-xs text-textMuted block mb-1">Access Token</label>
+              <input type="password" value={persona.whatsapp_access_token || ''}
+                onChange={(e) => setPersona({ ...persona, whatsapp_access_token: e.target.value })}
+                placeholder="System User permanent token"
+                className="w-full bg-surface2 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-twin" />
+            </div>
+
+            <div className="border-t border-border pt-4">
+              <div className="text-sm font-medium mb-1">Connect your Instagram</div>
+              <p className="text-xs text-textMuted">Get these from your Meta App → Instagram API setup page.</p>
+            </div>
+            <div>
+              <label className="text-xs text-textMuted block mb-1">Instagram Business Account ID</label>
+              <input value={persona.instagram_business_account_id || ''}
+                onChange={(e) => setPersona({ ...persona, instagram_business_account_id: e.target.value })}
+                placeholder="e.g. 17841441829682113"
+                className="w-full bg-surface2 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-twin" />
+            </div>
+            <div>
+              <label className="text-xs text-textMuted block mb-1">Access Token</label>
+              <input type="password" value={persona.instagram_access_token || ''}
+                onChange={(e) => setPersona({ ...persona, instagram_access_token: e.target.value })}
+                placeholder="Instagram User access token"
+                className="w-full bg-surface2 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-twin" />
+            </div>
+
+            <button onClick={savePersona} disabled={saving}
+              className="self-start text-sm bg-gradient-to-br from-twin to-[#8FEEF5] text-bg font-semibold px-5 py-2.5 rounded-lg disabled:opacity-60">
+              {saving ? 'Saving...' : 'Save connection'}
+            </button>
+            <p className="text-xs text-textMuted">
+              Your credentials are stored securely and only used to send replies through your own number/account.
+            </p>
+          </div>
         </section>
 
         {/* Persona */}

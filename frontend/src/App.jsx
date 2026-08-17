@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
-
+import SetupGuide from './pages/SetupGuide'
 import Landing from './pages/Landing'
 import Privacy from './pages/Privacy'
 import Login from './pages/Login'
@@ -25,6 +25,7 @@ export default function App() {
         <Route path="/dashboard/content" element={<ProtectedRoute><ContentCalendar /></ProtectedRoute>} />
         <Route path="/dashboard/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
         <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/docs/whatsapp-setup" element={<SetupGuide />} />
       </Routes>
     </AuthProvider>
   )

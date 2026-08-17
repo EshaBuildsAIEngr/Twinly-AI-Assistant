@@ -19,7 +19,8 @@ def send_instagram_message(recipient_id: str, message: str, business_account_id:
     }
     with httpx.Client(timeout=15) as client:
         resp = client.post(url, headers=headers, json=payload)
-        resp.raise_for_status()
+        if resp.status_code >= 400:
+            raise Exception(f"Instagram API {resp.status_code}: {resp.text}")
         return resp.json()
 
 

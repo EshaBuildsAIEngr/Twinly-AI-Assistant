@@ -1,7 +1,7 @@
 import httpx
 from app.config import settings
 
-GRAPH_BASE = "https://graph.facebook.com/v20.0"
+GRAPH_BASE = "https://graph.instagram.com/v20.0"
 
 
 def send_instagram_message(recipient_id: str, message: str, business_account_id: str = None, access_token: str = None) -> dict:

@@ -134,6 +134,28 @@ def tool_search_faqs(db: Session, user_id: str, query: str) -> dict:
     return {"results": results}
 
 
+def _split_for_instagram(text: str, limit: int = 950) -> list[str]:
+    """Instagram DMs have a hard 1000-char limit. Split long agent replies into
+    multiple messages at natural breakpoints (newlines, then sentences) rather
+    than cutting mid-word."""
+    if len(text) <= limit:
+        return [text]
+
+    chunks = []
+    remaining = text
+    while len(remaining) > limit:
+        split_at = remaining.rfind("\n", 0, limit)
+        if split_at == -1:
+            split_at = remaining.rfind(". ", 0, limit)
+        if split_at == -1:
+            split_at = limit
+        chunks.append(remaining[:split_at].strip())
+        remaining = remaining[split_at:].strip()
+    if remaining:
+        chunks.append(remaining)
+    return chunks
+
+
 def tool_send_reply(db: Session, conversation: Conversation, message: str) -> dict:
     print(f"[TOOL send_reply] Attempting to send: {message[:80]}...")
     msg = Message(conversation_id=conversation.id, sender=MessageSender.AGENT, content=message)
@@ -153,11 +175,14 @@ def tool_send_reply(db: Session, conversation: Conversation, message: str) -> di
             )
             print(f"[TOOL send_reply] WhatsApp API response: {result}")
         elif conversation.platform == Platform.INSTAGRAM:
-            result = send_instagram_message(
-                conversation.customer_id, message,
-                business_account_id=persona.instagram_business_account_id if persona else None,
-                access_token=persona.instagram_access_token if persona else None,
-            )
+            chunks = _split_for_instagram(message)
+            result = None
+            for chunk in chunks:
+                result = send_instagram_message(
+                    conversation.customer_id, chunk,
+                    business_account_id=persona.instagram_business_account_id if persona else None,
+                    access_token=persona.instagram_access_token if persona else None,
+                )
             print(f"[TOOL send_reply] Instagram API response: {result}")
     except Exception as e:
         print(f"[TOOL send_reply] SEND FAILED: {type(e).__name__}: {e}")

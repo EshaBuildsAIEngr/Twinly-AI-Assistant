@@ -7,6 +7,7 @@ export default function Inbox() {
   const [selected, setSelected] = useState(null)
   const [replyText, setReplyText] = useState('')
   const [loading, setLoading] = useState(true)
+  const [showThreadOnMobile, setShowThreadOnMobile] = useState(false)
 
   const load = async () => {
     const res = await client.get('/api/conversations')
@@ -19,6 +20,7 @@ export default function Inbox() {
   const openConversation = async (id) => {
     const res = await client.get(`/api/conversations/${id}`)
     setSelected(res.data)
+    setShowThreadOnMobile(true)
   }
 
   const sendReply = async () => {
@@ -33,8 +35,9 @@ export default function Inbox() {
 
   return (
     <DashboardLayout>
-      <div className="flex h-screen">
-        <div className="w-80 border-r border-border overflow-y-auto shrink-0">
+      <div className="flex h-[calc(100vh-57px)] md:h-screen">
+        {/* Conversation list — hidden on mobile once a thread is open */}
+        <div className={`${showThreadOnMobile ? 'hidden' : 'flex'} md:flex flex-col w-full md:w-80 border-r border-border overflow-y-auto shrink-0`}>
           <div className="px-5 py-4 border-b border-border font-display text-lg">Inbox</div>
           {loading && <div className="p-5 text-textMuted text-sm">Loading...</div>}
           {!loading && conversations.length === 0 && (
@@ -54,17 +57,21 @@ export default function Inbox() {
           ))}
         </div>
 
-        <div className="flex-1 flex flex-col">
-          {!selected && <div className="flex-1 flex items-center justify-center text-textMuted text-sm">Select a conversation</div>}
+        {/* Thread view — full width on mobile when open */}
+        <div className={`${showThreadOnMobile ? 'flex' : 'hidden'} md:flex flex-1 flex-col min-w-0`}>
+          {!selected && <div className="flex-1 items-center justify-center text-textMuted text-sm hidden md:flex">Select a conversation</div>}
           {selected && (
             <>
-              <div className="px-6 py-4 border-b border-border">
-                <div className="font-medium">{selected.customer_name || selected.customer_id}</div>
-                <div className="text-xs text-textMuted">{selected.platform}</div>
+              <div className="px-4 md:px-6 py-4 border-b border-border flex items-center gap-3">
+                <button onClick={() => setShowThreadOnMobile(false)} className="md:hidden text-textMuted text-lg">←</button>
+                <div>
+                  <div className="font-medium">{selected.customer_name || selected.customer_id}</div>
+                  <div className="text-xs text-textMuted">{selected.platform}</div>
+                </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-3">
+              <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-3">
                 {selected.messages.map((m) => (
-                  <div key={m.id} className={`max-w-[70%] px-3.5 py-2.5 rounded-xl text-sm ${
+                  <div key={m.id} className={`max-w-[85%] md:max-w-[70%] px-3.5 py-2.5 rounded-xl text-sm ${
                     m.sender === 'customer' ? 'self-start bg-surface2' : 'self-end bg-twin/10 border border-twin/25'
                   }`}>
                     {m.content}
@@ -72,12 +79,12 @@ export default function Inbox() {
                   </div>
                 ))}
               </div>
-              <div className="p-4 border-t border-border flex gap-3">
+              <div className="p-3 md:p-4 border-t border-border flex gap-2 md:gap-3">
                 <input value={replyText} onChange={(e) => setReplyText(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && sendReply()}
-                  placeholder="Type a reply (used to override or handle escalated chats)..."
-                  className="flex-1 bg-surface2 border border-border rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-twin" />
-                <button onClick={sendReply} className="bg-twin text-bg font-semibold text-sm px-5 rounded-lg">Send</button>
+                  placeholder="Type a reply..."
+                  className="flex-1 min-w-0 bg-surface2 border border-border rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-twin" />
+                <button onClick={sendReply} className="bg-twin text-bg font-semibold text-sm px-4 md:px-5 rounded-lg shrink-0">Send</button>
               </div>
             </>
           )}

@@ -150,3 +150,13 @@ class UsageLog(Base):
     user_id = Column(UUID(as_uuid=False), ForeignKey("users.id"))
     action_type = Column(String, nullable=False)  # "reply" | "content_draft"
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class PushSubscription(Base):
+    __tablename__ = "push_subscriptions"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id"))
+    endpoint = Column(Text, nullable=False, unique=True)
+    p256dh = Column(String, nullable=False)
+    auth = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)

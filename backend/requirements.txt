@@ -14,3 +14,4 @@ numpy>=1.26.4
 apscheduler>=3.10.4
 email-validator>=2.0.0
 bcrypt==4.0.1
+pywebpush>=2.0.0

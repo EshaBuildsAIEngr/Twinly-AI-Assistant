@@ -211,7 +211,14 @@ def tool_escalate(db: Session, conversation: Conversation, reason: str) -> dict:
     db.add(Message(conversation_id=conversation.id, sender=MessageSender.AGENT,
                     content=f"[Escalated to owner: {reason}]"))
     db.commit()
-    # Production upgrade path: notify owner directly on WhatsApp here.
+
+    from app.services.push_service import send_push_to_user
+    send_push_to_user(
+        db, conversation.user_id,
+        title="Twinly — needs your attention",
+        body=f"A customer on {conversation.platform.value} needs a reply: {reason}",
+    )
+
     return {"status": "escalated"}
 
 

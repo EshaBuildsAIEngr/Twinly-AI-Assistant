@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from app.routers import auth, persona, conversations, content, analytics, webhooks, push
 from app.database import Base, engine
 from app.config import settings
 from app.routers import auth, persona, conversations, content, analytics, webhooks
@@ -30,7 +30,8 @@ app.include_router(conversations.router)
 app.include_router(content.router)
 app.include_router(analytics.router)
 app.include_router(webhooks.router)
-
+app.include_router(webhooks.router)
+app.include_router(push.router)
 
 @app.get("/")
 def root():

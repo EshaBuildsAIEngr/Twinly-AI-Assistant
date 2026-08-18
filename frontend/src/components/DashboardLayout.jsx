@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useNotifications } from '../hooks/useNotifications'
-
+import { usePushNotifications } from '../hooks/usePushNotifications'
 const navItems = [
   { to: '/dashboard', label: 'Inbox', icon: '💬', end: true },
   { to: '/dashboard/content', label: 'Content', icon: '✍️' },
@@ -15,7 +15,7 @@ export default function DashboardLayout({ children }) {
   const navigate = useNavigate()
   const { permission, requestPermission } = useNotifications()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
+  const { permission, enable } = usePushNotifications()
   const tierLabel = { trial: 'Free Trial', starter: 'Starter', pro: 'Pro', expired: 'Expired' }[user?.subscription_tier] || ''
 
   return (
@@ -48,10 +48,10 @@ export default function DashboardLayout({ children }) {
           ))}
         </nav>
 
-        {permission !== 'granted' && permission !== 'unsupported' && (
+                {permission !== 'granted' && permission !== 'unsupported' && (
           <div className="mx-3 mb-3 bg-twin/10 border border-twin/25 rounded-lg p-3">
-            <div className="text-xs text-text mb-2">Get notified here when a customer needs you — no need to check a phone app.</div>
-            <button onClick={requestPermission} className="text-xs bg-twin text-bg font-semibold px-3 py-1.5 rounded-lg">
+            <div className="text-xs text-text mb-2">Get a real notification when a customer needs you — even with this tab closed.</div>
+            <button onClick={enable} className="text-xs bg-twin text-bg font-semibold px-3 py-1.5 rounded-lg">
               Enable notifications
             </button>
           </div>

@@ -29,3 +29,6 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+VAPID_PRIVATE_KEY: str = ""
+VAPID_PUBLIC_KEY: str = ""
+VAPID_CLAIM_EMAIL: str = "mailto:admin@twinly.app"   
